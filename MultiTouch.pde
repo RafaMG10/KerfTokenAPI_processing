@@ -1,9 +1,10 @@
+//Rafael Morales (rafael.morales@inria.fr)
+
 class MultiTouchInput {
 
   protected ArrayList<TouchPoint> points;
 
   public MultiTouchInput(ArrayList<TouchPoint> points) {
-    super();
     this.points = points;
   }
 
