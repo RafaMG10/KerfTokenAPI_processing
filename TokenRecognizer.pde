@@ -1,4 +1,6 @@
 //Rafael Morales (rafael.morales@inria.fr)
+import java.util.Collections;
+
 
 class TokenRecognizer {
 
@@ -79,139 +81,134 @@ class TokenRecognizer {
     tokenTemplates.add(tt);
   }
 
-  //public static void centerOnPoint(ArrayList<TouchPoint> points, TouchPoint refPoint) {
-  //  for (TouchPoint pt : points) {
-  //    pt.setLocation(pt.getX() - refPoint.getX(), pt.getY() - refPoint.getY());
-  //  }
-  //}
+  public void centerOnPoint(ArrayList<TouchPoint> points, TouchPoint refPoint) {
+    for (TouchPoint pt : points) {
+      pt.setLocation(pt.getX() - refPoint.getX(), pt.getY() - refPoint.getY());
+    }
+  }
 
-  //public static double angleBetweenVectors(TouchPoint vector1, TouchPoint vector2) {
-  //  double angle = Math.atan2(vector2.getY(), vector2.getX()) - Math.atan2(vector1.getY(), vector1.getX());
-  //  //  normalize to the range 0 .. 2 * Pi:
-  //  if (angle < 0) angle += 2 * Math.PI;
-  //  return angle;
-  //}
+  public  double angleBetweenVectors(TouchPoint vector1, TouchPoint vector2) {
+    double angle = Math.atan2(vector2.getY(), vector2.getX()) - Math.atan2(vector1.getY(), vector1.getX());
+    //  normalize to the range 0 .. 2 * Pi:
+    if (angle < 0) angle += 2 * Math.PI;
+    return angle;
+  }
 
-  //public static void sortCCW(ArrayList<TouchPoint> points, final TouchPoint refPoint) {
-  //  final TouchPoint vectorXAxis = new TouchPoint(10, 0);
-  //  Collections.sort(points, new Comparator<TouchPoint>() {
-  //    public int compare(TouchPoint pt1, TouchPoint pt2) {
-  //      TouchPoint vector1 = new TouchPoint(pt1.getX() - refPoint.getX(), pt1.getY() - refPoint.getY());
-  //      double angle1 = angleBetweenVectors(vectorXAxis, vector1);
-  //      TouchPoint vector2 = new TouchPoint(pt2.getX() - refPoint.getX(), pt2.getY() - refPoint.getY());
-  //      double angle2 = angleBetweenVectors(vectorXAxis, vector2);
-  //      return (int)((angle2 - angle1)*100);
-  //    }
-  //  });
-  //}
+  public void sortCCW(ArrayList<TouchPoint> points, final TouchPoint refPoint) {
+    for(TouchPoint p : points)
+    {
+      p.setLocation(p.x-refPoint.x,p.y - refPoint.y);
+    }
+    Collections.sort(points, new ComparatorByPoints());
+  }
 
-  //public static void rotateBy(ArrayList<TouchPoint> points, TouchPoint refPoint, double theta, ArrayList<TouchPoint> newPoints) {
-  //  TouchPoint ptSrc, ptDest;
-  //  for (int i = 0; i < points.size(); i++) {
-  //    ptSrc = points.get(i);
-  //    if (newPoints.size() > i) {
-  //      ptDest = newPoints.get(i);
-  //    } else {
-  //      ptDest = new TouchPoint();
-  //      newPoints.add(i, ptDest);
-  //    }
-  //    double x = (ptSrc.getX() - refPoint.getX()) * Math.cos(theta) - (ptSrc.getY() - refPoint.getY()) * Math.sin(theta) + refPoint.getX();
-  //    double y = (ptSrc.getX() - refPoint.getX()) * Math.sin(theta) + (ptSrc.getY() - refPoint.getY()) * Math.cos(theta) + refPoint.getY();
-  //    ptDest.setLocation(x, y);
-  //  }
-  //}
+  public void rotateBy(ArrayList<TouchPoint> points, TouchPoint refPoint, double theta, ArrayList<TouchPoint> newPoints) {
+    TouchPoint ptSrc, ptDest;
+    for (int i = 0; i < points.size(); i++) {
+      ptSrc = points.get(i);
+      if (newPoints.size() > i) {
+        ptDest = newPoints.get(i);
+      } else {
+        ptDest = new TouchPoint();
+        newPoints.add(i, ptDest);
+      }
+      double x = (ptSrc.getX() - refPoint.getX()) * Math.cos(theta) - (ptSrc.getY() - refPoint.getY()) * Math.sin(theta) + refPoint.getX();
+      double y = (ptSrc.getX() - refPoint.getX()) * Math.sin(theta) + (ptSrc.getY() - refPoint.getY()) * Math.cos(theta) + refPoint.getY();
+      ptDest.setLocation(x, y);
+    }
+  }
 
-  //public static void rotateBy(TouchPoint point, TouchPoint refPoint, double theta, TouchPoint newPoint) {
-  //  double x = (point.getX() - refPoint.getX()) * Math.cos(theta) - (point.getY() - refPoint.getY()) * Math.sin(theta) + refPoint.getX();
-  //  double y = (point.getX() - refPoint.getX()) * Math.sin(theta) + (point.getY() - refPoint.getY()) * Math.cos(theta) + refPoint.getY();
-  //  newPoint.setLocation(x, y);
-  //}
+  public void rotateBy(TouchPoint point, TouchPoint refPoint, double theta, TouchPoint newPoint) {
+    double x = (point.getX() - refPoint.getX()) * Math.cos(theta) - (point.getY() - refPoint.getY()) * Math.sin(theta) + refPoint.getX();
+    double y = (point.getX() - refPoint.getX()) * Math.sin(theta) + (point.getY() - refPoint.getY()) * Math.cos(theta) + refPoint.getY();
+    newPoint.setLocation(x, y);
+  }
 
-  //public static double sortAndAlign(ArrayList<TouchPoint> points, TouchPoint refPoint, ArrayList<TouchPoint> resPoints) {
-  //  resPoints.clear();
-  //  for (TouchPoint pt : points) {
-  //    resPoints.add(new TouchPoint(pt.getX(), pt.getY()));
-  //  }
-  //  centerOnPoint(resPoints, refPoint);
-  //  TouchPoint origin = new TouchPoint(0, 0);
-  //  sortCCW(resPoints, origin);
-  //  TouchPoint refVector = new TouchPoint(resPoints.get(0).getX(), resPoints.get(0).getY());
-  //  TouchPoint xAxisVector = new TouchPoint(10, 0);
-  //  double angle = angleBetweenVectors(refVector, xAxisVector);
-  //  rotateBy(resPoints, origin, angle, resPoints);
-  //  return angle;
-  //}
+  public double sortAndAlign(ArrayList<TouchPoint> points, TouchPoint refPoint, ArrayList<TouchPoint> resPoints) {
+    resPoints.clear();
+    for (TouchPoint pt : points) {
+      resPoints.add(new TouchPoint(pt.getX(), pt.getY()));
+    }
+    centerOnPoint(resPoints, refPoint);
+    TouchPoint origin = new TouchPoint(0, 0);
+    sortCCW(resPoints, origin);
+    TouchPoint refVector = new TouchPoint(resPoints.get(0).getX(), resPoints.get(0).getY());
+    TouchPoint xAxisVector = new TouchPoint(10, 0);
+    double angle = angleBetweenVectors(refVector, xAxisVector);
+    rotateBy(resPoints, origin, angle, resPoints);
+    return angle;
+  }
 
-  //public static void sort(ArrayList<TouchPoint> points, TouchPoint refPoint, ArrayList<TouchPoint> resPoints) {
-  //  resPoints.clear();
-  //  for (TouchPoint pt : points) {
-  //    resPoints.add(new TouchPoint(pt.getX(), pt.getY()));
-  //  }
-  //  centerOnPoint(resPoints, refPoint);
-  //  TouchPoint origin = new TouchPoint(0, 0);
-  //  sortCCW(resPoints, origin);
-////    TouchPoint refVector = new TouchPoint(resPoints.get(0).getX(), resPoints.get(0).getY());
-////    TouchPoint xAxisVector = new TouchPoint(10, 0);
-////    double angle = angleBetweenVectors(refVector, xAxisVector);
-////    rotateBy(resPoints, origin, angle, resPoints);
-////    return angle;
-  //}
+  public void sort(ArrayList<TouchPoint> points, TouchPoint refPoint, ArrayList<TouchPoint> resPoints) {
+    resPoints.clear();
+    for (TouchPoint pt : points) {
+      resPoints.add(new TouchPoint(pt.getX(), pt.getY()));
+    }
+    centerOnPoint(resPoints, refPoint);
+    TouchPoint origin = new TouchPoint(0, 0);
+    sortCCW(resPoints, origin);
+//    TouchPoint refVector = new TouchPoint(resPoints.get(0).getX(), resPoints.get(0).getY());
+//    TouchPoint xAxisVector = new TouchPoint(10, 0);
+//    double angle = angleBetweenVectors(refVector, xAxisVector);
+//    rotateBy(resPoints, origin, angle, resPoints);
+//    return angle;
+  }
 
-  //public static double sortAndAlignTemplate(TokenTemplate template, TouchPoint refPoint) {
-  //  centerOnPoint(template.getPoints(), refPoint);
-  //  template.getCenter().setLocation(template.getCenter().getX() - refPoint.x, template.getCenter().getY() - refPoint.y);
+  public double sortAndAlignTemplate(TokenTemplate template, TouchPoint refPoint) {
+    centerOnPoint(template.getPoints(), refPoint);
+    template.getCenter().setLocation(template.getCenter().getX() - refPoint.x, template.getCenter().getY() - refPoint.y);
 
-  //  TouchPoint origin = new TouchPoint(0, 0);
-  //  sortCCW(template.getPoints(), origin);
-  //  TouchPoint refVector = new TouchPoint(template.getPoints().get(0).getX(), template.getPoints().get(0).getY());
-  //  TouchPoint xAxisVector = new TouchPoint(10, 0);
-  //  double angle = angleBetweenVectors(refVector, xAxisVector);
-  //  rotateBy(template.getPoints(), origin, angle, template.getPoints());
+    TouchPoint origin = new TouchPoint(0, 0);
+    sortCCW(template.getPoints(), origin);
+    TouchPoint refVector = new TouchPoint(template.getPoints().get(0).getX(), template.getPoints().get(0).getY());
+    TouchPoint xAxisVector = new TouchPoint(10, 0);
+    double angle = angleBetweenVectors(refVector, xAxisVector);
+    rotateBy(template.getPoints(), origin, angle, template.getPoints());
 
 
-  //  double x = template.getCenter().getX() * Math.cos(angle) - template.getCenter().getY() * Math.sin(angle);
-  //  double y = template.getCenter().getX() * Math.sin(angle) + template.getCenter().getY() * Math.cos(angle);
-  //  template.getCenter().setLocation(x, y);
+    double x = template.getCenter().getX() * Math.cos(angle) - template.getCenter().getY() * Math.sin(angle);
+    double y = template.getCenter().getX() * Math.sin(angle) + template.getCenter().getY() * Math.cos(angle);
+    template.getCenter().setLocation(x, y);
 
-  //  return angle;
-  //}
+    return angle;
+  }
 
 
-  //public static void rotateTemplate(TokenTemplate template, double angle) {
-  //  ArrayList<TouchPoint> resPoints = new ArrayList<TouchPoint>();
-  //  for (TouchPoint pt : template.points) {
-  //    resPoints.add(new TouchPoint(pt.getX(), pt.getY()));
-  //  }
-  //  TouchPoint origin = new TouchPoint(0, 0);
-  //  rotateBy(resPoints, origin, angle, resPoints);
-  //  TouchPoint resCenter = new TouchPoint(template.getCenter().x, template.getCenter().y);
-  //  double x = resCenter.getX() * Math.cos(angle) - resCenter.getY() * Math.sin(angle);
-  //  double y = resCenter.getX() * Math.sin(angle) + resCenter.getY() * Math.cos(angle);
-  //  resCenter.setLocation(x, y);
-  //  template.setPoints(resPoints);
-  //  template.setCenter(resCenter);
-  //}
+  public void rotateTemplate(TokenTemplate template, double angle) {
+    ArrayList<TouchPoint> resPoints = new ArrayList<TouchPoint>();
+    for (TouchPoint pt : template.points) {
+      resPoints.add(new TouchPoint(pt.getX(), pt.getY()));
+    }
+    TouchPoint origin = new TouchPoint(0, 0);
+    rotateBy(resPoints, origin, angle, resPoints);
+    TouchPoint resCenter = new TouchPoint(template.getCenter().x, template.getCenter().y);
+    double x = resCenter.getX() * Math.cos(angle) - resCenter.getY() * Math.sin(angle);
+    double y = resCenter.getX() * Math.sin(angle) + resCenter.getY() * Math.cos(angle);
+    resCenter.setLocation(x, y);
+    template.setPoints(resPoints);
+    template.setCenter(resCenter);
+  }
 
-  //public static void translateTemplate(TokenTemplate template, TouchPoint translate) {
-  //  for (TouchPoint pt : template.points) {
-  //    pt.setLocation(pt.x + translate.x, pt.y + translate.y);
-  //  }
-  //  template.getCenter().setLocation(template.getCenter().x + translate.x, template.getCenter().y+translate.y);
-  //}
+  public void translateTemplate(TokenTemplate template, TouchPoint translate) {
+    for (TouchPoint pt : template.points) {
+      pt.setLocation(pt.x + translate.x, pt.y + translate.y);
+    }
+    template.getCenter().setLocation(template.getCenter().x + translate.x, template.getCenter().y+translate.y);
+  }
 
-  //public static TouchPoint centroid(ArrayList<TouchPoint> points) {
-  //  double sumX = 0;
-  //  double sumY = 0;
-  //  for (Iterator<TouchPoint> iterator = points.iterator(); iterator.hasNext();) {
-  //    TouchPoint next = iterator.next();
-  //    if(next != null) {
-  //      sumX += next.getX();
-  //      sumY += next.getY();
-  //    }
-  //  }
-  //  int length = points.size();
-  //  return new TouchPoint(sumX / length, sumY / length);
-  //}
+  public TouchPoint centroid(ArrayList<TouchPoint> points) {
+    double sumX = 0;
+    double sumY = 0;
+    for (Iterator<TouchPoint> iterator = points.iterator(); iterator.hasNext();) {
+      TouchPoint next = iterator.next();
+      if(next != null) {
+        sumX += next.getX();
+        sumY += next.getY();
+      }
+    }
+    int length = points.size();
+    return new TouchPoint(sumX / length, sumY / length);
+  }
 
   //public static ArrayList<ArrayList<TouchPoint>> allPermutations(ArrayList<TouchPoint> points) {
   //  ArrayList<ArrayList<TouchPoint>> allPermutations = new ArrayList<ArrayList<TouchPoint>>();
