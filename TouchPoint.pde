@@ -1,9 +1,16 @@
+//Rafael Morales (rafael.morales@inria.fr)
+
 class TouchPoint {
   
-  public double x;
-  public double y;
-  
-  public TouchPoint() { }
+  double x;
+  double y;
+
+  public TouchPoint() 
+  {
+    x = 0;
+    y = 0;
+  }
+
   
   public TouchPoint(double x, double y) {
     this.x = x;
@@ -35,5 +42,4 @@ class TouchPoint {
     this.x = x;
     this.y = y;
   }
-
 }
