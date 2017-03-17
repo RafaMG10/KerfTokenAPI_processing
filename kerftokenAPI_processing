@@ -1,0 +1,15 @@
+import TUIO.*;
+
+void setup()
+{
+  // GUI setup
+  noCursor();
+  size(displayWidth,displayHeight);
+  noStroke();
+  fill(0);
+  
+}
+
+void draw()
+{
+}
