@@ -12,69 +12,71 @@ class TokenRecognizer {
 
   public TokenRecognizer(String templatesFile) {
     this.tokenTemplates = new ArrayList<TokenTemplate>();
-    
-      String[] lines = loadStrings(templatesFile);
-      //BufferedReader br = new BufferedReader(new FileReader(templatesFile));
-      //String line = br.readLine();
-      //DecimalFormat df = new DecimalFormat();
-      //DecimalFormatSymbols symbols = new DecimalFormatSymbols();
-      //symbols.setDecimalSeparator('.');
-      //symbols.setGroupingSeparator(',');
-      //df.setDecimalFormatSymbols(symbols);
-      float x, y;
-      int index = 0 ;
-      while (index < lines.length) {
-        println(lines[index]);
-        String[] parts = lines[index].split(",");
-        
-        ////        System.out.println(line);
-        ////if (!line.startsWith("#")) {
-        //  //String[] parts = line.split(",");
-        if (parts.length > 3) {
-            String tokenID = parts[0];
-            int fingerCount = Integer.parseInt(parts[1]);
-            ArrayList<TouchPoint> points = new ArrayList<TouchPoint>();
-            for (int i = 0; i < fingerCount; i++) {
-              x = Float.parseFloat(parts[2+(i*2)]);
-              y = Float.parseFloat(parts[2+(i*2)+1]);
-              TouchPoint point = new TouchPoint(x, y);
-              points.add(point);
-            }
-            TouchPoint center = new TouchPoint(0, 0);
-            if(parts.length > (2+(fingerCount*2))) {
-              double centerx = Double.parseDouble(parts[2+(fingerCount*2)]);
-              double centery = Double.parseDouble(parts[2+(fingerCount*2)+1]);
-              center.setLocation(centerx, centery);
-              System.out.println("CENTER provided ("+centerx+", "+centery+")");
-            } else {
-              System.out.println("NO CENTER provided");
-            }
 
-            int index_shape = 2+(fingerCount*2)+2;
-            boolean first = true;
-            PShape outline = createShape();
-            outline.beginShape();
-            while(index_shape < parts.length) {
-              x = Float.parseFloat(parts[index_shape]);
-              y = Float.parseFloat(parts[index_shape+1]);
-              if(first) {
-                first = false;
-                outline.vertex(x, y);
-              } else {
-                outline.vertex(x, y);
-              }
-              index_shape += 2;
-            }
-            outline.stroke(10);
-            outline.endShape();
+    String[] lines = loadStrings(templatesFile);
+    //BufferedReader br = new BufferedReader(new FileReader(templatesFile));
+    //String line = br.readLine();
+    //DecimalFormat df = new DecimalFormat();
+    //DecimalFormatSymbols symbols = new DecimalFormatSymbols();
+    //symbols.setDecimalSeparator('.');
+    //symbols.setGroupingSeparator(',');
+    //df.setDecimalFormatSymbols(symbols);
+    float x, y;
+    int index = 0 ;
+    while (index < lines.length) {
+      println(lines[index]);
+      String[] parts = lines[index].split(",");
 
-            TokenTemplate tt = new TokenTemplate(points, tokenID, center);
-            tt.setTokenOutline(outline);
-            tokenTemplates.add(tt);
-          }
-          index+=1;
+      ////        System.out.println(line);
+      ////if (!line.startsWith("#")) {
+      //  //String[] parts = line.split(",");
+      if (parts.length > 3) {
+        String tokenID = parts[0];
+        int fingerCount = Integer.parseInt(parts[1]);
+        ArrayList<TouchPoint> points = new ArrayList<TouchPoint>();
+        for (int i = 0; i < fingerCount; i++) {
+          x = Float.parseFloat(parts[2+(i*2)]);
+          y = Float.parseFloat(parts[2+(i*2)+1]);
+          TouchPoint point = new TouchPoint(x, y);
+          points.add(point);
         }
-        
+        TouchPoint center = new TouchPoint(0, 0);
+        if (parts.length > (2+(fingerCount*2))) {
+          double centerx = Double.parseDouble(parts[2+(fingerCount*2)]);
+          double centery = Double.parseDouble(parts[2+(fingerCount*2)+1]);
+          center.setLocation(centerx, centery);
+          System.out.println("CENTER provided ("+centerx+", "+centery+")");
+        } else {
+          System.out.println("NO CENTER provided");
+        }
+
+        int index_shape = 2+(fingerCount*2)+2;
+        boolean first = true;
+        PShape outline = createShape();
+        outline.beginShape();
+        outline.stroke(10);
+        while (index_shape < parts.length) {
+          x = Float.parseFloat(parts[index_shape]);
+          y = Float.parseFloat(parts[index_shape+1]);
+          //println("X: " + x);
+          //println("Y: " + y);
+          if (first) {
+            first = false;
+            outline.vertex(x, y);
+          } else {
+            outline.vertex(x, y);
+          }
+          index_shape += 2;
+        }
+
+        outline.endShape();
+        println("outline: " + outline);
+        TokenTemplate tt = new TokenTemplate(points, tokenID, center, outline);
+        //tt.setTokenOutline(outline);
+        tokenTemplates.add(tt);
+      }
+      index+=1;
+    }
   }
 
   public void addTemplate(TokenTemplate tt) {
@@ -95,9 +97,9 @@ class TokenRecognizer {
   }
 
   public void sortCCW(ArrayList<TouchPoint> points, final TouchPoint refPoint) {
-    for(TouchPoint p : points)
+    for (TouchPoint p : points)
     {
-      p.setLocation(p.x-refPoint.x,p.y - refPoint.y);
+      p.setLocation(p.x-refPoint.x, p.y - refPoint.y);
     }
     Collections.sort(points, new ComparatorByPoints());
   }
@@ -147,11 +149,11 @@ class TokenRecognizer {
     centerOnPoint(resPoints, refPoint);
     TouchPoint origin = new TouchPoint(0, 0);
     sortCCW(resPoints, origin);
-//    TouchPoint refVector = new TouchPoint(resPoints.get(0).getX(), resPoints.get(0).getY());
-//    TouchPoint xAxisVector = new TouchPoint(10, 0);
-//    double angle = angleBetweenVectors(refVector, xAxisVector);
-//    rotateBy(resPoints, origin, angle, resPoints);
-//    return angle;
+    //    TouchPoint refVector = new TouchPoint(resPoints.get(0).getX(), resPoints.get(0).getY());
+    //    TouchPoint xAxisVector = new TouchPoint(10, 0);
+    //    double angle = angleBetweenVectors(refVector, xAxisVector);
+    //    rotateBy(resPoints, origin, angle, resPoints);
+    //    return angle;
   }
 
   public double sortAndAlignTemplate(TokenTemplate template, TouchPoint refPoint) {
@@ -199,9 +201,9 @@ class TokenRecognizer {
   public TouchPoint centroid(ArrayList<TouchPoint> points) {
     double sumX = 0;
     double sumY = 0;
-    for (Iterator<TouchPoint> iterator = points.iterator(); iterator.hasNext();) {
+    for (Iterator<TouchPoint> iterator = points.iterator(); iterator.hasNext(); ) {
       TouchPoint next = iterator.next();
-      if(next != null) {
+      if (next != null) {
         sumX += next.getX();
         sumY += next.getY();
       }
@@ -215,10 +217,10 @@ class TokenRecognizer {
     for (int i = 0; i < points.size(); i++) {
       ArrayList<TouchPoint> order = new ArrayList<TouchPoint>();
       order.add(points.get(i));
-      for(int j = i+1; j < points.size(); j++) {
+      for (int j = i+1; j < points.size(); j++) {
         order.add(points.get(j));
       }
-      for(int j = 0; j < i; j++) {
+      for (int j = 0; j < i; j++) {
         order.add(points.get(j));
       }
       allPermutations.add(order);
@@ -227,7 +229,7 @@ class TokenRecognizer {
   }
 
   public double meanSquaredPairedPointDistanceForAlignedPairs(ArrayList<TouchPoint> points1, ArrayList<TouchPoint> points2) {
-    if(points1.size() != points2.size()) {
+    if (points1.size() != points2.size()) {
       return Double.MAX_VALUE;
     } else {
       double res = 0;
@@ -242,7 +244,7 @@ class TokenRecognizer {
 
   public DistanceResult minDistance(TokenTemplate templateOrderedAndAligned, ArrayList<TouchPoint> inputPoints, TouchPoint refPoint) {
     ArrayList<TouchPoint> inputPointsOrderedAndAligned = new ArrayList<TouchPoint>();
-//    double alignAngle = sortAndAlign(inputPoints, refPoint, inputPointsOrderedAndAligned);
+    //    double alignAngle = sortAndAlign(inputPoints, refPoint, inputPointsOrderedAndAligned);
     sort(inputPoints, refPoint, inputPointsOrderedAndAligned);
 
     ArrayList<ArrayList<TouchPoint>> allPermutations = allPermutations(inputPointsOrderedAndAligned);
@@ -256,14 +258,14 @@ class TokenRecognizer {
       ArrayList<TouchPoint> inputPermutationRotated = new ArrayList<TouchPoint>();
       rotateBy(inputPermutation, origin, angle, inputPermutationRotated);
       double d = meanSquaredPairedPointDistanceForAlignedPairs(inputPermutationRotated, templateOrderedAndAligned.getPoints());
-      if(d < minDis) {
+      if (d < minDis) {
         minDis = d;
         angleRotate = angle;
       }
     }
 
     // modify the template to align it with input
-//    rotateTemplate(templateOrderedAndAligned, -(angleRotate+alignAngle));
+    //    rotateTemplate(templateOrderedAndAligned, -(angleRotate+alignAngle));
     rotateTemplate(templateOrderedAndAligned, -(angleRotate));
     translateTemplate(templateOrderedAndAligned, new TouchPoint(refPoint.x, refPoint.y));
 
@@ -271,7 +273,7 @@ class TokenRecognizer {
   }
 
   public TokenTemplate recognize(ArrayList<TouchPoint> input) {
-    if(input.size() != 3) {
+    if (input.size() != 3) {
       return null;
     }
     for (TokenTemplate tokenTemplate : tokenTemplates) {
@@ -286,24 +288,24 @@ class TokenRecognizer {
         points.add(new TouchPoint(touchPoint.x, touchPoint.y));
       }
       TouchPoint center = new TouchPoint(tokenTemplate.getCenter().x, tokenTemplate.getCenter().y);
-      TokenTemplate templateTransformed = new TokenTemplate(points, tokenTemplate.getTokenID(), center);
+      TokenTemplate templateTransformed = new TokenTemplate(points, tokenTemplate.getTokenID(), center,tokenTemplate.getTokenOutline());
       templateTransformed.setOriginalGeometryTemplate(templateTransformed);
       double templateAngle = sortAndAlignTemplate(templateTransformed, centroid(tokenTemplate.getPoints()));
-//      double d = minDistance(templateTransformed, input, centroid(input));
-//      templateTransformed.setDistance(d);
+      //      double d = minDistance(templateTransformed, input, centroid(input));
+      //      templateTransformed.setDistance(d);
       DistanceResult inputDistance = minDistance(templateTransformed, input, centroid(input));
       templateTransformed.setDistance(inputDistance.getDistance());
-//      System.out.println("\t"+tokenTemplate.tokenID+" _ template:"+templateAngle+" _ input:"+inputDistance.getAngle());
+      //      System.out.println("\t"+tokenTemplate.tokenID+" _ template:"+templateAngle+" _ input:"+inputDistance.getAngle());
       templateTransformed.setAngle(inputDistance.getAngle()-templateAngle);
-//      templateTransformed.setAngle(dr.getAngle());
+      //      templateTransformed.setAngle(dr.getAngle());
 
-      if(inputDistance.getDistance() < minDis) {
+      if (inputDistance.getDistance() < minDis) {
         minDis = inputDistance.getDistance();
         tokenRecognized = templateTransformed;
       }
     }
 
-    if(tokenRecognized == null) {
+    if (tokenRecognized == null) {
       return null;
     }
 
@@ -311,12 +313,12 @@ class TokenRecognizer {
     ArrayList<TouchPoint> unsortedTemplatePoints = new ArrayList<TouchPoint>();
     unsortedTemplatePoints.addAll(tokenRecognized.getPoints());
     ArrayList<TouchPoint> sortedTemplatePoints = new ArrayList<TouchPoint>();
-    for(int i = 0; i < input.size(); i++) {
+    for (int i = 0; i < input.size(); i++) {
       double minDistance = Double.MAX_VALUE;
       int indexMinDistance = -1;
-      for(int j = 0; j < unsortedTemplatePoints.size(); j++) {
+      for (int j = 0; j < unsortedTemplatePoints.size(); j++) {
         double d = input.get(i).distance(unsortedTemplatePoints.get(j));
-        if(d < minDistance) {
+        if (d < minDistance) {
           minDistance = d;
           indexMinDistance = j;
         }
@@ -325,7 +327,8 @@ class TokenRecognizer {
       sortedTemplatePoints.add(point);
     }
     tokenRecognized.setPoints(sortedTemplatePoints);
-
+    println("TOKEN RECOGNIZED " + tokenRecognized.tokenOutline);
+    println("TOKEN RECOGNIZED ID" + tokenRecognized.tokenID);
     return tokenRecognized;
   }
 }

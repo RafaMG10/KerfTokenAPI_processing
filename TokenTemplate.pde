@@ -12,13 +12,14 @@ class TokenTemplate extends MultiTouchInput {
 
   protected TokenTemplate originalGeometryTemplate;
 
-  public TokenTemplate(ArrayList<TouchPoint> points, String tokenID, TouchPoint center) {
+  public TokenTemplate(ArrayList<TouchPoint> points, String tokenID, TouchPoint center, PShape outline) {
     super(points);
     this.points = points;
     this.tokenID = tokenID;
     this.center = center;
     this.angle = 0;
     this.distance = 0;
+    this.tokenOutline=outline;
   }
 
   public String toString() {
@@ -71,10 +72,12 @@ class TokenTemplate extends MultiTouchInput {
   }
 
   public PShape getTokenOutline() {
-    return tokenOutline;
+    println("getTokenOutline -> tokenOutLine " + tokenOutline);
+    return this.tokenOutline;
   }
 
   public void setTokenOutline(PShape tokenOutline) {
+    println("tokenOutLine " + tokenOutline);
     this.tokenOutline = tokenOutline;
   }
 
@@ -85,5 +88,6 @@ class TokenTemplate extends MultiTouchInput {
   public void setAngle(double angle) {
     this.angle = angle;
   }
+  
 
 }
