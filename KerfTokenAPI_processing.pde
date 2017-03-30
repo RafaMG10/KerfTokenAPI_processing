@@ -5,8 +5,8 @@ import TUIO.*;
 public int inputWidth = 105;// 198; // 105; // 720;
 TuioProcessing tuioClient;
 boolean verbose = false; // print console debug messages
-boolean callback = true; // updates only after callbacks
-boolean debug = true; // debugging
+boolean callback = false; // updates only after callbacks
+boolean debug = false; // debugging
 
 
 protected TokenRecognizer recognizer;
@@ -24,13 +24,15 @@ protected TokenRecognizer recognizer;
   protected static TouchPoint[] FINGERS_LOCATION = new TouchPoint[10];
   protected static TouchPoint[] FINGERS_LOCATION_AT_TIMER_START_TIME = new TouchPoint[10];
 
+  public ArrayList<TouchPoint> fingers = new ArrayList<TouchPoint>();
   protected int dwellDuration = 200; // in ms
   protected double dwellTolerance = 3; // in mm
 
   protected long dwellStartTime = -1;
   protected long lastUpdateTime = -1;
   protected long time ;
-
+  double SCREEN_RES;
+  PShape s;
   protected ArrayList<Integer> indices = new ArrayList<Integer>();
 
   protected TouchPoint centre_token;
@@ -46,13 +48,13 @@ void setup()
   size(600, 600);
   noFill();
   strokeCap(SQUARE);
-  TokenRecognizer recognizer = new TokenRecognizer("templates.txt");
-  ArrayList<TouchPoint> points = new ArrayList<TouchPoint>();
-  points.add(new TouchPoint(30,30));
-  points.add(new TouchPoint(90,90));
-  points.add(new TouchPoint(100,450));
-  TokenTemplate tt =recognizer.recognize(points);
-  println("recognizer is: " + tt.tokenID);
+  SCREEN_RES = 113 / 25.4;
+  //ArrayList<TouchPoint> points = new ArrayList<TouchPoint>();
+  //points.add(new TouchPoint(30,30));
+  //points.add(new TouchPoint(90,90));
+  //points.add(new TouchPoint(100,450));
+  //TokenTemplate tt =recognizer.recognize(points);
+  //println("recognizer is: " + tt.tokenID);
   tuioClient  = new TuioProcessing(this);
   //SheilRegression s = new SheilRegression();
   
@@ -64,18 +66,47 @@ void draw()
   
   if(tokenDown!=null)
   {
-    println("holaaaaa");
-    println("TokenDown " + tokenDown);
+    println("tokenDown " + tokenDown);
+    TouchPoint center = getTokenCenter(currentTemplate,fingers);
+    ellipse((float)(center.x * width ),
+            (float)(center.y * height ), 20, 20);
+    //translate((float)center.x, (float)center.y);
+    //PShape s = currentTemplate.getTokenOutline();
+  //fo//r (int i = 0; i < s.getVertexCount(); i++) {
+    //PVector v = s.getVertex(i);
+    //v.x += random(-1, 1);
+    //v.y += random(-1, 1);
+    //s.setVertex(i, v);
+  //}
+    shape(s);
+    for (Iterator<TouchPoint> iterator = fingers.iterator(); iterator.hasNext();) {
+      TouchPoint point = iterator.next();
+      if(point != null) {
+        println("point " + point);
+        double dx = point.x - center.x;
+        double dy = point.y - center.y;
+        double dxInMM = dx * width;
+        double dyInMM = dy * height;
+        double dxInWindow = dxInMM * SCREEN_RES;
+        double dyInWindow = dyInMM * SCREEN_RES;
+        
+        ellipse((float)(point.x * width ),
+            (float)(point.y * height ), 20, 20);
+      }
+    }
+    
   }else
   {
+    println("tokenDown " + tokenDown);
+    background(251);
     //recognizingToken();
   }
 }
 
 void recognizingToken()
 {
-  long currentTime = millis();
-      if((currentTime - dwellStartTime) >= dwellDuration && (lastUpdateTime - dwellStartTime) < dwellDuration) {
+  //long currentTime = millis();
+      //if((currentTime - dwellStartTime) >= dwellDuration && (lastUpdateTime - dwellStartTime) < dwellDuration) {
         ArrayList<TouchPoint> inputInMms = new ArrayList<TouchPoint>(); // the recognizer stores templates in mm
         ArrayList<TouchPoint> inputIn01 = new ArrayList<TouchPoint>();
         indices.clear();
@@ -89,7 +120,18 @@ void recognizingToken()
         if(debug) {
           System.out.println("input: "+inputInMms);
         }
-        currentTemplate = recognizer.recognize(inputInMms);
+        if(inputInMms.size() == 3) 
+        {
+          TokenRecognizer recognizer = new TokenRecognizer("templates.txt");
+          //println("size point" + inputInMms.size());
+          for (int i = 0; i < inputInMms.size(); i++) {
+            //println(" point in Mms " +inputInMms.get(i));
+          }
+          currentTemplate = recognizer.recognize(inputInMms);
+          fingers = inputIn01;
+          s = currentTemplate.getTokenOutline();
+          println("S:" + s);
+        }
 
         if(debug) {
           System.out.println("recognized as: "+currentTemplate);
@@ -98,6 +140,7 @@ void recognizingToken()
           long time1 = millis();
           time = millis();
           tokenDown = currentTemplate.getTokenID();
+          println("tokenDown " + tokenDown);
           //fireTokenDown(tokenDown, inputIn01, inputWidth, inputHeight, currentTemplate);
           
           //add point to the bend's buffer
@@ -123,7 +166,7 @@ void recognizingToken()
           //          bufferSqueeze.shifted(time, numFingers, distance, tcenterMm);
           //          buffer_surface.addDist(distance,time1);
         }
-      }
+      //}// end the timer
       lastUpdateTime = millis();
 }
 // --------------------------------------------------------------
@@ -161,7 +204,8 @@ void addTuioCursor(TuioCursor arg0) {
     for (int i = 0; i < FINGERS_LOCATION.length; i++) {
       FINGERS_LOCATION_AT_TIMER_START_TIME[i] = FINGERS_LOCATION[i];
     }
-    dwellStartTime = System.currentTimeMillis();
+    recognizingToken();
+    //dwellStartTime = System.currentTimeMillis();
   }
 
 protected void tokenUp() {
@@ -176,7 +220,9 @@ protected void tokenUp() {
       }
     }
     //fireTokenUp(tokenDown, inputIn01, inputWidth, inputHeight, currentTemplate);
+    println("tokenDown must be null");
     tokenDown = null;
+    currentTemplate = null;
   }
 
 redraw();
@@ -270,7 +316,7 @@ void removeTuioCursor(TuioCursor tcur) {
     }
     
     if(fingerCount == 1) {
-//      System.out.println("finger count " + fingerCount);
+      //System.out.println("finger count " + fingerCount);
       tokenUp();
     } else {
       dwellStartTime = System.currentTimeMillis();
@@ -313,3 +359,43 @@ void refresh(TuioTime frameTime) {
   if (verbose) println("frame #"+frameTime.getFrameID()+" ("+frameTime.getTotalMilliseconds()+")");
   if (callback) redraw();
 }
+public TouchPoint getTokenCenter(TokenTemplate transformedTemplate, ArrayList<TouchPoint> tokenPoints) {
+        TouchPoint centerTemplate = new TouchPoint(transformedTemplate.getCenter().x, transformedTemplate.getCenter().y);
+        TouchPoint pt1Template = new TouchPoint(transformedTemplate.getPoints().get(0).x, transformedTemplate.getPoints().get(0).y);
+        TouchPoint pt2Template = new TouchPoint(transformedTemplate.getPoints().get(1).x, transformedTemplate.getPoints().get(1).y);
+        TouchPoint v1CenterTemplate = new TouchPoint(centerTemplate.x - pt1Template.x, centerTemplate.y - pt1Template.y);
+        TouchPoint v12Template = new TouchPoint(pt2Template.x - pt1Template.x, pt2Template.y - pt1Template.y);
+
+        double angle21Center = angleBetweenVectors(v12Template, v1CenterTemplate);
+
+        TouchPoint pt1Token = tokenPoints.get(0);
+        pt1Token = new TouchPoint(pt1Token.x*inputWidth, pt1Token.y*inputHeight);
+        TouchPoint pt2Token = tokenPoints.get(1);
+        pt2Token = new TouchPoint(pt2Token.x*inputWidth, pt2Token.y*inputWidth);
+        TouchPoint v12Token = new TouchPoint(pt2Token.x - pt1Token.x, pt2Token.y - pt1Token.y);
+        double x12Token = angleBetweenVectors(new TouchPoint(1, 0), v12Token);
+
+        double length1Center =
+                Math.sqrt((centerTemplate.x - pt1Template.x) * (centerTemplate.x - pt1Template.x) +
+                        (centerTemplate.y - pt1Template.y) * (centerTemplate.y - pt1Template.y));
+
+        TouchPoint centerToken = new TouchPoint(length1Center, 0);
+        centerToken.setLocation(centerToken.x + pt1Token.getX(), centerToken.y + pt1Token.getY());
+        double angle = x12Token + angle21Center;
+        rotateBy(centerToken, pt1Token, angle, centerToken);
+        centerToken.setLocation(centerToken.x/inputWidth, centerToken.y/inputHeight);
+        return centerToken;
+    }
+    public  double angleBetweenVectors(TouchPoint vector1, TouchPoint vector2) {
+    double angle = Math.atan2(vector2.getY(), vector2.getX()) - Math.atan2(vector1.getY(), vector1.getX());
+    //  normalize to the range 0 .. 2 * Pi:
+    if (angle < 0) angle += 2 * Math.PI;
+    return angle;
+    }
+    
+    public void rotateBy(TouchPoint point, TouchPoint refPoint, double theta, TouchPoint newPoint) {
+    double x = (point.getX() - refPoint.getX()) * Math.cos(theta) - (point.getY() - refPoint.getY()) * Math.sin(theta) + refPoint.getX();
+    double y = (point.getX() - refPoint.getX()) * Math.sin(theta) + (point.getY() - refPoint.getY()) * Math.cos(theta) + refPoint.getY();
+    newPoint.setLocation(x, y);
+  }
+  
